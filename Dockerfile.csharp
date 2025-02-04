@@ -1,0 +1,29 @@
+# Use the official .NET 6.0 SDK image
+FROM mcr.microsoft.com/dotnet/sdk:6.0
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Install Git
+RUN apt-get update && apt-get install -y git
+
+# Clone the repository
+RUN git clone https://github.com/MachadoMichael/FoodScrapper.git .
+
+# Restore dependencies
+RUN dotnet restore
+
+# Build the application
+RUN dotnet build --no-restore -c Release
+
+
+RUN dotnet tool install --global dotnet-ef --version 6.0.0
+
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+
+# RUN dotnet ef database update
+# Expose port 4000 instead of 5000
+EXPOSE 4000
+
+ENTRYPOINT dotnet-ef database update --project /app/ && dotnet run

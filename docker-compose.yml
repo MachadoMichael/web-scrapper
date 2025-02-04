@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user 
+      POSTGRES_PASSWORD: password 
+      POSTGRES_DB: alimentos_db
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  csharp-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.csharp
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=foodscrapper;Username=postgres;Password=postgres
+
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.react
+    ports:
+      - "3000:3000"
+    depends_on:
+      - csharp-app
+
+volumes:
+  postgres_data:

@@ -1,0 +1,45 @@
+# Use a base image with Ubuntu (or any other Linux distribution) to install nvm
+FROM ubuntu:22.04 AS base
+
+# Install dependencies for nvm and Node.js
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    libssl-dev \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install nvm (Node Version Manager)
+ENV NVM_DIR /usr/local/nvm
+RUN mkdir -p $NVM_DIR && \
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+
+# Install Node.js 22 using nvm
+ENV NODE_VERSION 22
+RUN . "$NVM_DIR/nvm.sh" && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    nvm use default
+
+# Add Node.js and npm to the PATH
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# # Verify Node.js and npm installation
+# RUN node -v && npm -v
+
+# Set the working directory
+WORKDIR /app
+
+# Clone the GitHub repository
+RUN git clone https://github.com/MachadoMichael/scrapper-client.git .
+
+# Install Node.js dependencies
+RUN . "$NVM_DIR/nvm.sh" && npm install --force
+
+# Expose the port your React app runs on
+EXPOSE 3000
+
+# Start the React app
+CMD ["/bin/sh", "-c", ". \"$NVM_DIR/nvm.sh\" && npm start"]
+
+# CMD ["tail", "-f", "/dev/null"]
